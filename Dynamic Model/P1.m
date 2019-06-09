@@ -47,15 +47,14 @@ V = 1.26; %[m^3]
 MW_air = 28.84E-3; %[kg/mol]
 MW_w = 18E-3; %[kg/mol]
 
-
 %% 3.
 
 % Integration:
-tspan = [0 1E7]; %[s]
+tspan = [0 1E5]; %[s]
 Y0 = [X_beta0 X_gamma0 T_beta0 T_gamma0];
 
 % Drying stage:
-[ts,Ys] = ode45(@(t,Y)DryingStage(t,Y,Y0),tspan,Y0)
+[ts,Ys] = ode23s(@(t,Y)DryingStage(t,Y,Y0),tspan,Y0)
 
 %% *. Functions:
 

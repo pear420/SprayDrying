@@ -37,7 +37,7 @@ CC = -46.13;
 
 % Design Specifications: 
 Dsd = 5.5; %[m] Diameter of the spray drier
-W_target = 0.0005; %[kg_water/kg_fat] target particle moisture
+W_target = 1; %[kg_water/kg_fat] target particle moisture
 
 % Universal gas constant:
 R = 8.314; %[J/mol/K]
@@ -76,8 +76,11 @@ Y0 = [mP0 mG0 TP0 TG0 vS0 z0];
 mP_fat = w_fat*mP0; %[kg] fat(dry) mass in the particle (constant)
 mP_target = mP_fat*(1+W_target); %[kg]
 
+% Minumum mass of the particle:
+mP_min = mP_fat;
+
 % Options:
-options = odeset('Event',@(t,Y)EventFunction(t,Y,mP_target)); 
+options = odeset('Event',@(t,Y)EventFunction(t,Y,mP_target,mP_fat)); 
 
 % Integration:
 tspan = [0,20]; %[s]
@@ -200,13 +203,13 @@ dY_dt = dY_dt.';
 
 end
 
-function [value,isterminal,direction] = EventFunction(t,Y,mP_target)
+function [value,isterminal,direction] = EventFunction(t,Y,mP_target,mP_min)
 % Event function: stop integration upon reaching the target particle 
 % mass (determined from the target moisture):
 
-value = Y(1)-mP_target;
-isterminal = 1;
-direction = 0;
+value = [Y(1)-mP_target; Y(1)-mP_min];
+isterminal = [1; 1];
+direction = [0; 0];
 
 end
 
