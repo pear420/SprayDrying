@@ -31,13 +31,13 @@ MWa = 28.9647*1e-3; %[kg/mol] molar weight
 MWw = 28*1e-3; %[kg/mol] molar weight
 
 % Antoine coefficents for water [mmHg],[K]:
-AA = 18.3036;
-BB = 3816.44;
-CC = -46.13;
+AA = 8.14019;
+BB = 1810.94;
+CC = 244.485-273.15; 
 
 % Design Specifications: 
 Dsd = 5.5; %[m] Diameter of the spray drier
-W_target = 1; %[kg_water/kg_fat] target particle moisture
+W_target = 0.001; %[kg_water/kg_fat] target particle moisture
 
 % Universal gas constant:
 R = 8.314; %[J/mol/K]
@@ -218,7 +218,7 @@ function Pev = Antoine(T)
 
 global AA BB CC
 
-Pev = exp(AA-BB/(T+CC))/760; %[Pa]
+Pev = 10^(AA-BB/(T+CC))/760; %[Pa]
 
 end
 

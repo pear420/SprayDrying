@@ -22,7 +22,7 @@ G_gamma = 1.872E-1; %[kg/s] mass velocity
 X_beta0 = 4; %[-] Initial water content
 X_gamma0 = 1.960E-2; %[-] Initial water content
 T_beta0 = 2.7E1+273.15; %[K] Initial temperature
-T_gamma0 = 1.23E2+273.15; %[K] Initial temperature
+T_gamma0 = 1.6E2+273.15; %[K] Initial temperature
 
 %% 2.
 
@@ -50,11 +50,12 @@ MW_w = 18E-3; %[kg/mol]
 %% 3.
 
 % Integration:
-tspan = [0 1E5]; %[s]
+tspan = [0 1200]; %[s]
 Y0 = [X_beta0 X_gamma0 T_beta0 T_gamma0];
 
 % Drying stage:
-[ts,Ys] = ode23s(@(t,Y)DryingStage(t,Y,Y0),tspan,Y0)
+options = odeset('Abstol',1E-6,'Reltol',1E-6);
+[ts,Ys] = ode23s(@(t,Y)DryingStage(t,Y,Y0),tspan,Y0,options)
 
 %% *. Functions:
 
@@ -103,19 +104,29 @@ N_w_beta = rho_beta*kc_beta*(X_beta-X_beta_INTERPHASE);
 N_w_gamma = rho_gamma*kc_gamma*(X_gamma_INTERPHASE-X_gamma);
 q_beta = h_beta*(T_INTERPHASE-T_beta);
 q_gamma = h_gamma*(T_gamma-T_INTERPHASE);
-H_beta = (Cp_beta+Cp_w*X_beta)*T_beta; %[J/kg]
-H_gamma = Cp_gamma*T_gamma+(H_wv+Cp_wv*T_gamma)*X_gamma; %[J/kg]
-H_beta_INLET = (Cp_beta+Cp_w*X_beta_INLET)*T_beta_INLET; %[J/kg]
-H_gamma_INLET = Cp_gamma*T_gamma_INLET+(H_wv+Cp_wv*T_gamma_INLET)*X_gamma_INLET; %[J/kg]
+H_beta = (Cp_beta+Cp_w*X_beta)*(T_beta-273.15); %[J/kg]
+H_gamma = Cp_gamma*(T_gamma-273.15)+(H_wv+Cp_wv*(T_gamma-273.15))*X_gamma; %[J/kg]
+H_beta_INLET = (Cp_beta+Cp_w*X_beta_INLET)*(T_beta_INLET-273.15); %[J/kg]
+H_gamma_INLET = Cp_gamma*(T_gamma_INLET-273.15)+(H_wv+Cp_wv*(T_gamma_INLET-273.15))*X_gamma_INLET; %[J/kg]
 
 % Corrections:
-N_w_beta = N_w_gamma;
+% Rg = 8.314;
+% kc = kc_gamma;
+% kp = kc*MW_w/Rg/T_gamma;
+% AA = 8.14019;
+% BB = 1810.94;
+% CC = 244.485-273.15; 
+% P0 = 133.322*10^(AA-BB/(T_gamma+CC));
+% P = 1.01325E5;
+% xw = B;
+% Pw = xw*P;
+% N_w_gamma = kp*(P0-Pw)*1E-2; %[kg/s/m^2]
 
 % Derivatives:
 dX_beta_dt = (-N_w_beta*a*V-G_beta*(X_beta-X_beta_INLET))/(rho_beta*(1-epsi)*V);
 dX_gamma_dt = (+N_w_gamma*a*V-G_gamma*(X_gamma-X_gamma_INLET))/(rho_gamma*epsi*V);
 dT_beta_dt = (+q_beta*a*V-G_beta*(H_beta-H_beta_INLET))/(rho_beta*(1-epsi)*V*(Cp_beta+X_beta*Cp_w));
-dT_gamma_dt = (-q_gamma*a*V+N_w_beta*a*V*DHev_w-G_gamma*(H_gamma-H_gamma_INLET))/(rho_gamma*epsi*V*(Cp_gamma+Cp_w*X_gamma));
+dT_gamma_dt = (-q_gamma*a*V+N_w_beta*a*V*DHev_w-G_gamma*(H_gamma-H_gamma_INLET))/(rho_gamma*epsi*V*(Cp_gamma+Cp_wv*X_gamma));
 
 % Output:
 dY_dt = [dX_beta_dt; dX_gamma_dt; dT_beta_dt; dT_gamma_dt]; 
