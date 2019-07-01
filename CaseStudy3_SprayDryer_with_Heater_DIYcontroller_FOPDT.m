@@ -34,7 +34,7 @@ finalSetpoint = 1;          %[-]
 
 % PID controller:
 kP_controller = 1E-4;       %[-]    Proportional Gain
-tauI_controller = 0.5E-2;   %[min]  Integration time
+tauI_controller = 1E-2;     %[min]  Integration time
 tauD_controller = 0;        %[min]  Derivative time        
 kI_controller = kP_controller/tauI_controller;    %[-]  Integral Gain
 kD_controller = kP_controller*tauD_controller;    %[-]  Differential Gain
